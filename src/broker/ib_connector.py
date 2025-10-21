@@ -123,10 +123,7 @@ class IBConnector:
                 'symbol': position.contract.symbol,
                 'position': position.position,
                 'avgCost': position.avgCost,
-                'marketPrice': position.marketPrice,
-                'marketValue': position.marketValue,
-                'unrealizedPNL': position.unrealizedPNL,
-                'realizedPNL': position.realizedPNL
+                'contract': position.contract
             })
         
         logger.info(f"Retrieved {len(positions)} positions")
