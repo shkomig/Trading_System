@@ -1,0 +1,179 @@
+# Trading System Development Rules for Cursor AI
+
+## Project Context
+You are building a professional algorithmic trading system with the following requirements:
+- Interactive Brokers API integration for real and paper trading
+- Multiple trading strategies (technical and ML-based)
+- Backtesting engine with performance metrics
+- Risk management with Kelly Criterion
+- Learning system that improves from historical performance
+- Clean, modular, production-ready code
+
+## Code Style Guidelines
+
+### Python Best Practices
+- Use Python 3.10+ features
+- Follow PEP 8 style guide
+- Use type hints for all function signatures
+- Write comprehensive docstrings (Google style)
+- Keep functions under 50 lines when possible
+- Use meaningful variable names (not single letters except in loops)
+
+### Architecture Principles
+- Follow SOLID principles
+- Use dependency injection
+- Implement proper error handling with custom exceptions
+- Use logging instead of print statements
+- Write unit tests for critical functions
+- Separate business logic from infrastructure
+
+### Trading-Specific Rules
+1. **Never hardcode credentials** - always use environment variables
+2. **Always validate market data** before using it
+3. **Include proper risk checks** before placing orders
+4. **Log all trading decisions** with reasoning
+5. **Handle connection failures** gracefully
+6. **Implement circuit breakers** for excessive losses
+7. **Use paper trading mode** by default during development
+
+## File Organization
+- Keep each strategy in a separate file
+- Use `base_strategy.py` as parent class for all strategies
+- Store configuration in YAML files, not in code
+- Keep API keys in `.env` file (never commit this)
+- Use `config/` directory for all configuration files
+
+## When Creating New Features
+
+### For Trading Strategies
+```python
+class NewStrategy(BaseStrategy):
+    """
+    [Strategy description]
+    
+    Attributes:
+        [List key attributes]
+    
+    Methods:
+        calculate_indicators: Compute technical indicators
+        generate_signals: Generate buy/sell signals
+        update_performance: Track strategy performance
+    """
+```
+
+### For ML Models
+- Always split data into train/validation/test
+- Use proper normalization/scaling
+- Implement early stopping
+- Save model checkpoints
+- Track training metrics
+- Validate predictions before trading
+
+### For Risk Management
+- Calculate position size based on account value
+- Never risk more than 2% per trade by default
+- Implement stop-loss for every position
+- Check total portfolio exposure before new trades
+- Use Kelly Criterion with fractional sizing (0.25-0.5)
+
+## Testing Requirements
+
+### Unit Tests
+- Test each strategy's signal generation
+- Test risk management calculations
+- Mock IB API calls in tests
+- Test edge cases (empty data, extreme values)
+
+### Integration Tests
+- Test full trading workflow
+- Test backtesting engine with known data
+- Verify order placement flow
+
+### Backtesting
+- Test strategies on multiple time periods
+- Include transaction costs
+- Test during different market conditions
+- Walk-forward optimization
+
+## Error Handling
+
+### Critical Errors (Stop Trading)
+- Connection loss to broker
+- Invalid order parameters
+- Insufficient funds
+- Risk limit breach
+
+### Warnings (Log and Continue)
+- Missing data points
+- Strategy signal conflicts
+- Minor API errors
+
+## Performance Requirements
+- Backtest execution: < 1 minute for 1 year daily data
+- Real-time signal generation: < 100ms
+- Order placement: < 500ms
+- Database queries: < 100ms
+
+## Documentation
+- Update README.md with new features
+- Document API changes
+- Include example usage for new components
+- Maintain changelog
+
+## Security
+- Never log sensitive data (API keys, account numbers)
+- Use encrypted storage for credentials
+- Validate all user inputs
+- Implement rate limiting for API calls
+
+## When I Ask You To...
+
+### "Create a new strategy"
+1. Create file in `src/strategies/`
+2. Inherit from `BaseStrategy`
+3. Implement all abstract methods
+4. Add configuration to `config/strategies.yaml`
+5. Write unit tests
+6. Add example usage in docstring
+
+### "Optimize a strategy"
+1. Run backtest with parameter ranges
+2. Use walk-forward optimization
+3. Check for overfitting (out-of-sample test)
+4. Compare multiple metrics (Sharpe, Sortino, Win Rate)
+5. Visualize results
+
+### "Add ML model"
+1. Create in `src/ml_models/`
+2. Implement train/predict methods
+3. Add data preprocessing pipeline
+4. Include model evaluation metrics
+5. Save/load model functionality
+6. Add to strategy registry
+
+### "Debug an issue"
+1. Check logs first
+2. Verify data integrity
+3. Test with paper trading
+4. Add detailed logging if needed
+5. Create minimal reproducible example
+
+## Code Review Checklist
+Before submitting code, ensure:
+- [ ] Type hints on all functions
+- [ ] Docstrings with examples
+- [ ] Error handling implemented
+- [ ] Logging added
+- [ ] Tests written and passing
+- [ ] No hardcoded values
+- [ ] Configuration externalized
+- [ ] Performance acceptable
+- [ ] Security reviewed
+
+## Remember
+- Safety first: Always validate before trading
+- Code quality matters: Write for maintainability
+- Test thoroughly: Bugs can cost money
+- Document well: Future you will thank you
+- Stay modular: Easy to extend and modify
+

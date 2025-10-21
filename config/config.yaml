@@ -1,0 +1,118 @@
+# Trading System Configuration
+
+broker:
+  provider: "interactive_brokers"
+  host: "127.0.0.1"
+  paper_port: 7497
+  live_port: 7496
+  client_id: 1
+  default_mode: "paper"  # paper or live
+
+trading:
+  max_positions: 5
+  default_position_size: 0.2  # 20% of portfolio
+  commission: 0.001  # 0.1%
+  slippage: 0.0005   # 0.05%
+  initial_capital: 100000
+
+risk_management:
+  risk_per_trade: 0.02  # 2%
+  max_daily_loss: 0.05  # 5%
+  kelly_fraction: 0.5   # Half Kelly
+  max_leverage: 1.0     # No leverage
+  max_position_size: 0.25  # 25% max per position
+  
+strategies:
+  enabled:
+    - "MA_Crossover"
+    - "RSI_MACD"
+    - "Momentum"
+  
+  MA_Crossover:
+    short_window: 50
+    long_window: 200
+    use_ema: false
+  
+  RSI_MACD:
+    rsi_period: 14
+    rsi_oversold: 30
+    rsi_overbought: 70
+    macd_fast: 12
+    macd_slow: 26
+    macd_signal: 9
+    bb_period: 20
+    bb_std: 2.0
+  
+  Momentum:
+    lookback_period: 14
+    threshold: 0.02
+
+  LSTM_Predictor:
+    lookback_period: 60
+    prediction_horizon: 1
+    lstm_units: 50
+    dropout_rate: 0.2
+    epochs: 50
+    batch_size: 32
+  
+  DQN_Agent:
+    state_size: 10
+    action_size: 3
+    learning_rate: 0.001
+    gamma: 0.95
+    epsilon: 1.0
+    epsilon_decay: 0.995
+    epsilon_min: 0.01
+    memory_size: 2000
+    episodes: 100
+
+data:
+  default_timeframe: "1d"
+  historical_period: "1y"
+  update_interval: 60  # seconds
+  symbols:
+    - "AAPL"
+    - "GOOGL"
+    - "MSFT"
+    - "TSLA"
+    - "AMZN"
+  
+logging:
+  level: "INFO"
+  file: "logs/trading.log"
+  max_size: "100MB"
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+database:
+  type: "sqlite"  # or "postgresql"
+  path: "data/trading.db"
+
+backtesting:
+  initial_capital: 100000
+  commission: 0.001
+  slippage: 0.0005
+  
+alerts:
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from_email: ""
+    to_email: ""
+    username: ""
+    password: ""
+  
+  telegram:
+    enabled: false
+    bot_token: ""
+    chat_id: ""
+  
+  log:
+    enabled: true
+
+ollama:
+  enabled: false
+  api_url: "http://localhost:11434/api/generate"
+  model: "llama3"
+
