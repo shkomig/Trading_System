@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-from src.strategies.technical.moving_average import MovingAverageCrossover, TripleMAStrategy
-from src.strategies.technical.rsi_macd import RSIMACDStrategy, RSIDivergenceStrategy
+from src.strategies.technical.moving_average import MovingAverageCrossover, TripleMovingAverage
+from src.strategies.technical.rsi_macd import RSI_MACD_Strategy
 from src.strategies.technical.momentum import MomentumStrategy, DualMomentumStrategy
 
 
@@ -60,38 +60,38 @@ class TestMovingAverageCrossover:
         assert len(indicators) == len(sample_data)
 
 
-class TestTripleMAStrategy:
+class TestTripleMovingAverage:
     """Test Triple MA strategy"""
     
     def test_initialization(self):
         """Test strategy initialization"""
-        strategy = TripleMAStrategy(fast=10, medium=20, slow=50)
+        strategy = TripleMovingAverage(fast_window=10, medium_window=20, slow_window=50)
         assert strategy.fast_window == 10
         assert strategy.medium_window == 20
         assert strategy.slow_window == 50
     
     def test_generate_signals(self, sample_data):
         """Test signal generation"""
-        strategy = TripleMAStrategy(fast=10, medium=20, slow=50)
+        strategy = TripleMovingAverage(fast_window=10, medium_window=20, slow_window=50)
         signals = strategy.generate_signals(sample_data)
         
         assert isinstance(signals, pd.Series)
         assert len(signals) == len(sample_data)
 
 
-class TestRSIMACDStrategy:
+class TestRSI_MACD_Strategy:
     """Test RSI + MACD strategy"""
     
     def test_initialization(self):
         """Test strategy initialization"""
-        strategy = RSIMACDStrategy(rsi_period=14, rsi_overbought=70, rsi_oversold=30)
+        strategy = RSI_MACD_Strategy(rsi_period=14, rsi_overbought=70, rsi_oversold=30)
         assert strategy.rsi_period == 14
         assert strategy.rsi_overbought == 70
         assert strategy.rsi_oversold == 30
     
     def test_generate_signals(self, sample_data):
         """Test signal generation"""
-        strategy = RSIMACDStrategy()
+        strategy = RSI_MACD_Strategy()
         signals = strategy.generate_signals(sample_data)
         
         assert isinstance(signals, pd.Series)
@@ -99,7 +99,7 @@ class TestRSIMACDStrategy:
     
     def test_calculate_indicators(self, sample_data):
         """Test indicator calculation"""
-        strategy = RSIMACDStrategy()
+        strategy = RSI_MACD_Strategy()
         indicators = strategy.calculate_indicators(sample_data)
         
         assert 'rsi' in indicators.columns
@@ -154,8 +154,8 @@ def test_all_strategies_consistency(sample_data):
     """Test that all strategies return consistent output format"""
     strategies = [
         MovingAverageCrossover(),
-        TripleMAStrategy(),
-        RSIMACDStrategy(),
+        TripleMovingAverage(),
+        RSI_MACD_Strategy(),
         MomentumStrategy(),
         DualMomentumStrategy()
     ]

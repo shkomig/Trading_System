@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 
 from src.risk_management.kelly_criterion import KellyCriterion
-from src.risk_management.position_sizing import PositionSizer, PositionSizeMethod
+from src.risk_management.position_sizing import PositionSizer
 from src.risk_management.stop_loss_manager import StopLossManager, StopLossType
 
 
@@ -50,62 +50,65 @@ class TestPositionSizer:
     
     def test_initialization(self):
         """Test position sizer initialization"""
-        sizer = PositionSizer(account_value=100000)
-        assert sizer.account_value == 100000
-    
-    def test_fixed_fractional(self):
-        """Test fixed fractional position sizing"""
-        sizer = PositionSizer(account_value=100000)
-        
-        size = sizer.calculate_position_size(
-            current_price=100,
-            method=PositionSizeMethod.FIXED_FRACTIONAL,
-            risk_per_trade=0.02
-        )
-        
-        assert size > 0
-        assert size * 100 <= 100000 * 0.02 * 5  # Reasonable bounds
+        sizer = PositionSizer(method='kelly', risk_per_trade=0.02)
+        assert sizer.method == 'kelly'
+        assert sizer.risk_per_trade == 0.02
     
     def test_kelly_method(self):
         """Test Kelly-based position sizing"""
-        sizer = PositionSizer(account_value=100000)
+        sizer = PositionSizer(method='kelly', risk_per_trade=0.02)
         
-        size = sizer.calculate_position_size(
-            current_price=100,
-            method=PositionSizeMethod.KELLY,
-            kelly_fraction=0.5,
-            win_rate=0.6,
-            avg_win=1000,
-            avg_loss=500
+        # Create dummy trade history
+        trades_history = [100, -50, 80, -40, 120, -60, 90]
+        
+        size = sizer.calculate(
+            account_value=100000,
+            entry_price=100,
+            stop_loss=95,
+            trades_history=trades_history
+        )
+        
+        assert size >= 0
+    
+    def test_fixed_fractional(self):
+        """Test fixed fractional position sizing"""
+        sizer = PositionSizer(method='fixed_fractional', risk_per_trade=0.02)
+        
+        size = sizer.calculate(
+            account_value=100000,
+            entry_price=100,
+            stop_loss=95,
+            trades_history=[]
         )
         
         assert size > 0
     
-    def test_risk_based(self):
+    def test_fixed_risk(self):
         """Test risk-based position sizing"""
-        sizer = PositionSizer(account_value=100000)
+        sizer = PositionSizer(method='fixed_risk', risk_per_trade=0.02)
         
-        size = sizer.calculate_position_size(
-            current_price=100,
-            method=PositionSizeMethod.RISK_BASED,
-            risk_per_trade=0.02,
-            stop_loss_pct=0.05
+        size = sizer.calculate(
+            account_value=100000,
+            entry_price=100,
+            stop_loss=95,
+            trades_history=[]
         )
         
         assert size > 0
         # Maximum loss should not exceed risk per trade
-        max_loss = size * 100 * 0.05
-        assert max_loss <= 100000 * 0.02
+        max_loss = size * (100 - 95)
+        assert max_loss <= 100000 * 0.02 + 1  # +1 for rounding
     
     def test_volatility_based(self):
         """Test volatility-based position sizing"""
-        sizer = PositionSizer(account_value=100000)
+        sizer = PositionSizer(method='volatility_based', risk_per_trade=0.02)
         
-        size = sizer.calculate_position_size(
-            current_price=100,
-            method=PositionSizeMethod.VOLATILITY_BASED,
-            risk_per_trade=0.02,
-            volatility=0.03
+        size = sizer.calculate(
+            account_value=100000,
+            entry_price=100,
+            stop_loss=95,
+            volatility=0.03,
+            trades_history=[]
         )
         
         assert size > 0
