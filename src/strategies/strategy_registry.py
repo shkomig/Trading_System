@@ -178,3 +178,22 @@ def list_available_strategies() -> List[str]:
     registry = get_registry()
     return registry.list_strategies()
 
+
+def get_strategy(name: str, **kwargs) -> Optional[BaseStrategy]:
+    """
+    קבלת instance של אסטרטגיה
+    
+    Args:
+        name: שם האסטרטגיה
+        **kwargs: פרמטרים לאסטרטגיה
+        
+    Returns:
+        Instance של אסטרטגיה או None אם לא נמצאה
+    """
+    try:
+        registry = get_registry()
+        return registry.create(name, **kwargs)
+    except ValueError:
+        logger.warning(f"Strategy '{name}' not found")
+        return None
+
