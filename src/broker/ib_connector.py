@@ -346,11 +346,165 @@ class IBConnector:
         logger.info(f"Retrieved {len(orders)} open orders")
         return orders
     
+    def subscribe_realtime_bars(
+        self,
+        symbol: str,
+        callback: callable,
+        bar_size: int = 5,
+        what_to_show: str = 'TRADES',
+        exchange: str = 'SMART'
+    ):
+        """
+        Subscribe to real-time 5-second bars
+
+        Critical Fix: Enables continuous real-time data streaming
+        instead of periodic snapshots.
+
+        Args:
+            symbol: Stock symbol
+            callback: Function to call when new bar arrives
+                     callback(symbol: str, bar: dict)
+            bar_size: Bar size in seconds (5 only)
+            what_to_show: Data type ('TRADES', 'MIDPOINT', 'BID', 'ASK')
+            exchange: Exchange
+
+        Returns:
+            RealTimeBarsList object (can be cancelled)
+
+        Example:
+            >>> def on_bar(symbol, bar):
+            ...     print(f"{symbol}: {bar['close']}")
+            >>> bars = connector.subscribe_realtime_bars('AAPL', on_bar)
+        """
+        if not self.is_connected():
+            logger.error("Not connected to IB")
+            return None
+
+        try:
+            contract = Stock(symbol, exchange, 'USD')
+            self.ib.qualifyContracts(contract)
+
+            # Request real-time bars
+            bars = self.ib.reqRealTimeBars(
+                contract,
+                barSize=bar_size,
+                whatToShow=what_to_show,
+                useRTH=True  # Regular trading hours only
+            )
+
+            # Register callback
+            def wrapper(bars_list, has_new_bar):
+                """Wrapper to extract bar data and call user callback"""
+                if has_new_bar and bars_list:
+                    latest_bar = bars_list[-1]
+                    bar_data = {
+                        'time': latest_bar.time,
+                        'open': latest_bar.open_,
+                        'high': latest_bar.high,
+                        'low': latest_bar.low,
+                        'close': latest_bar.close,
+                        'volume': latest_bar.volume,
+                        'wap': latest_bar.wap,  # Weighted average price
+                        'count': latest_bar.count
+                    }
+                    callback(symbol, bar_data)
+
+            bars.updateEvent += wrapper
+
+            logger.info(f"Subscribed to real-time bars for {symbol}")
+            return bars
+
+        except Exception as e:
+            logger.error(f"Failed to subscribe to real-time bars for {symbol}: {e}")
+            return None
+
+    def subscribe_market_data(
+        self,
+        symbol: str,
+        callback: callable,
+        exchange: str = 'SMART'
+    ):
+        """
+        Subscribe to tick-by-tick market data
+
+        Provides real-time price updates (ticks) as they occur.
+
+        Args:
+            symbol: Stock symbol
+            callback: Function to call on price update
+                     callback(symbol: str, ticker: dict)
+            exchange: Exchange
+
+        Returns:
+            Ticker object
+
+        Example:
+            >>> def on_tick(symbol, ticker):
+            ...     print(f"{symbol}: ${ticker['last']}")
+            >>> ticker = connector.subscribe_market_data('AAPL', on_tick)
+        """
+        if not self.is_connected():
+            logger.error("Not connected to IB")
+            return None
+
+        try:
+            contract = Stock(symbol, exchange, 'USD')
+            self.ib.qualifyContracts(contract)
+
+            # Request market data
+            ticker = self.ib.reqMktData(contract, '', False, False)
+
+            # Register callback
+            def wrapper(ticker_obj):
+                """Extract ticker data and call user callback"""
+                ticker_data = {
+                    'symbol': symbol,
+                    'time': ticker_obj.time,
+                    'bid': ticker_obj.bid,
+                    'ask': ticker_obj.ask,
+                    'last': ticker_obj.last,
+                    'bid_size': ticker_obj.bidSize,
+                    'ask_size': ticker_obj.askSize,
+                    'last_size': ticker_obj.lastSize,
+                    'volume': ticker_obj.volume,
+                    'high': ticker_obj.high,
+                    'low': ticker_obj.low,
+                    'close': ticker_obj.close
+                }
+                callback(symbol, ticker_data)
+
+            ticker.updateEvent += wrapper
+
+            logger.info(f"Subscribed to market data for {symbol}")
+            return ticker
+
+        except Exception as e:
+            logger.error(f"Failed to subscribe to market data for {symbol}: {e}")
+            return None
+
+    def unsubscribe_realtime_bars(self, bars):
+        """Cancel real-time bars subscription"""
+        try:
+            if bars:
+                self.ib.cancelRealTimeBars(bars)
+                logger.info("Real-time bars subscription cancelled")
+        except Exception as e:
+            logger.error(f"Failed to unsubscribe real-time bars: {e}")
+
+    def unsubscribe_market_data(self, ticker):
+        """Cancel market data subscription"""
+        try:
+            if ticker:
+                self.ib.cancelMktData(ticker.contract)
+                logger.info("Market data subscription cancelled")
+        except Exception as e:
+            logger.error(f"Failed to unsubscribe market data: {e}")
+
     def __enter__(self):
         """Context manager entry"""
         self.connect()
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit"""
         self.disconnect()
