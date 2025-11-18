@@ -13,6 +13,17 @@
 - 🚨 **מערכת התראות** - Email, Telegram, Logs
 - 🤖 **Local LLM Integration** - ניתוח סנטימנט והמלצות
 
+### 🆕 NEW: מערכת מסחר אוטומטית מלאה (v2.0)
+
+- ⚡ **ביצוע אוטומטי של פקודות** - אין צורך בהתערבות ידנית
+- 🔄 **לולאת מסחר רציפה** - פועלת לאורך כל יום המסחר
+- 📡 **זרימת נתונים בזמן אמת** - קבלת נתוני שוק רציפה
+- 🛡️ **ניהול פוזיציות אוטומטי** - Stop-loss וTrailing stops
+- 📊 **מעקב P&L בזמן אמת** - חישוב רווחים והפסדים מיידי
+- ⏰ **אימות שעות מסחר** - מניעת מסחר מחוץ לשעות
+- 🔒 **מגבלות סיכון** - הגנה על ההון עם מגבלות אובדן יומיות
+- 🧪 **מצב Dry-Run** - בדיקה ללא סיכון
+
 ## 📁 מבנה הפרויקט
 
 ```
@@ -71,11 +82,33 @@ python src/main.py --mode info
 ### הרצה ראשונה
 
 ```bash
-# הרצת דוגמה מלאה
+# אופציה 1: הדגמה פשוטה (מומלץ למתחילים)
+python demo_simple.py
+
+# אופציה 2: בדיקת backtest
 python examples/simple_backtest.py
+
+# אופציה 3: מידע על המערכת
+python src/main.py --mode info
 ```
 
 זהו! המערכת מוכנה לשימוש 🎉
+
+### 🚀 הרצת מערכת אוטומטית (Production)
+
+```bash
+# התקנת תלות נוספת
+pip install pytz
+
+# 1. וודא ש-IB TWS/Gateway פועל
+# 2. הפעל את המערכת האוטומטית
+python production_trader.py
+
+# או דרך main.py
+python src/main.py --mode production
+```
+
+⚠️ **חשוב:** התחל תמיד עם `dry_run=True` ו-Paper Trading!
 
 ## 📖 שימוש מהיר
 
@@ -225,12 +258,72 @@ python examples/train_lstm.py
 python examples/optimize_strategy.py
 ```
 
+## 🤖 מערכת מסחר אוטומטית (Production Trading)
+
+### מהי מערכת האוטומציה?
+
+המערכת מספקת **ביצוע אוטומטי מלא** של אותות מסחר בזמן אמת, כולל:
+
+1. **OrderExecutor** - מתרגם אותות לפקודות מסחר
+2. **TradingLoop** - לולאה רציפה שפועלת כל יום מסחר
+3. **PositionManager** - מנהל פוזיציות, stop-loss וtrailing stops
+4. **Real-Time Data** - קבלת נתוני שוק רציפה (5-sec bars)
+5. **MarketHoursValidator** - מניעת מסחר מחוץ לשעות
+
+### שימוש מהיר
+
+```python
+# הרצת המערכת האוטומטית
+python production_trader.py
+
+# או דרך main.py
+python src/main.py --mode production
+```
+
+### הגדרות ב-config.yaml
+
+```yaml
+execution:
+  symbols:
+    - "AAPL"
+    - "MSFT"
+  max_positions: 5
+  max_position_value: 10000  # $10k לכל פוזיציה
+  stop_loss_pct: 0.05  # 5%
+  max_daily_loss: 1000  # $1000
+  dry_run: true  # הגדר ל-false למסחר אמיתי
+```
+
+### תכונות בטיחות
+
+- ✅ **Dry-Run Mode** - בדיקה ללא ביצוע אמיתי
+- ✅ **Stop-Loss אוטומטי** - על כל פוזיציה
+- ✅ **Trailing Stops** - נעילת רווחים
+- ✅ **מגבלת הפסד יומית** - הגנה על הון
+- ✅ **אימות שעות מסחר** - מניעת טעויות
+- ✅ **מגבלות פוזיציות** - ניהול סיכון
+
+### בדיקות (Tests)
+
+```bash
+# הרצת כל הטסטים החדשים
+pytest tests/test_order_executor.py -v
+pytest tests/test_position_manager.py -v
+pytest tests/test_trading_loop.py -v
+pytest tests/integration/test_full_workflow.py -v
+```
+
+### תיעוד מלא
+
+📖 **[workplan.md](workplan.md)** - תיעוד מקיף של המערכת האוטומטית
+
 ## 🔒 אבטחה
 
 - **אל תשתף** את קובץ `.env` או credentials
 - השתמש ב-**Paper Trading** בזמן פיתוח
 - **אמת נתונים** לפני שימוש
 - **הגדר stop-loss** לכל פוזיציה
+- **התחל עם dry_run=True** תמיד!
 
 ## ⚠️ אזהרה
 
