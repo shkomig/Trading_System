@@ -36,6 +36,7 @@ requests>=2.31.0
 tqdm>=4.65.0
 psutil>=5.9.0
 joblib>=1.3.0
+pytz>=2023.3  # For market hours timezone handling
 
 # Testing
 pytest>=7.4.0
