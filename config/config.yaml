@@ -116,3 +116,38 @@ ollama:
   api_url: "http://localhost:11434/api/generate"
   model: "llama3"
 
+# Production Trading Configuration (for automated execution)
+execution:
+  # Symbols to trade automatically
+  symbols:
+    - "AAPL"
+    - "MSFT"
+    - "TSLA"
+
+  # Position limits
+  max_positions: 5
+  max_position_value: 10000  # $10,000 max per position
+
+  # Risk parameters
+  stop_loss_pct: 0.05  # 5% stop-loss
+  trailing_stop_pct: 0.05  # 5% trailing stop
+  max_daily_loss: 1000  # $1,000 max daily loss
+
+  # Trading loop settings
+  update_interval: 60  # Check every 60 seconds
+  data_buffer_size: 200  # Keep 200 bars in memory
+
+  # Safety features
+  dry_run: true  # IMPORTANT: Set to false for real trading!
+  enable_trading: true  # Master switch
+
+  # Market hours (avoid high volatility periods)
+  avoid_first_minutes: 10  # Skip first 10 min after open
+  avoid_last_minutes: 10   # Skip last 10 min before close
+
+  # Broker configuration (for production mode)
+  broker:
+    host: "127.0.0.1"
+    port: 7497  # Paper trading (7496 for live)
+    is_paper: true  # Paper trading mode
+
